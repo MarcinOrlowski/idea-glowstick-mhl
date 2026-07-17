@@ -1,6 +1,5 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/banner.webp" alt="GlowStick MHL" width="180"/>
-</p>
+
+<img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/banner.jpg" alt="GlowStick MHL" width="600"/>
 
 ---
 
@@ -13,9 +12,8 @@ IDEs that helps you visually distinct each IDE window per project
 which allows instant visual identification and navigation
 across your projects.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/screenshot.webp" alt="GlowStick MHL" width="600"/>
-</p>
+<img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/screenshot.jpg" alt="GlowStick MHL" width="600"/>
+
 
 ## Features:
 
@@ -30,9 +28,7 @@ across your projects.
   on your toolbar, thne press right mouse button over it open context menu and
   use `Change Project Color` option to set your color:
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/menu.webp" alt="How to set Project Color" width="600"/>
-</p>
+<img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/menu.jpg" alt="How to set Project Color" width="600"/>
 
 Aside from using knobs and sliders to tweak your frame shape, you can also drag
 the handles on the preview idea.
