@@ -1,5 +1,4 @@
-
-<img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/banner.jpg" alt="GlowStick MHL" width="600"/>
+<img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/banner.jpg" alt="GlowStick MHL" width="600" height="234" />
 
 ---
 
@@ -7,13 +6,11 @@
 
 Frame your IDE with color for instant visual identification of projects.
 
-GlowStick is visual expansion plugin for IntelliJ IDEA based
-IDEs that helps you visually distinct each IDE window per project
-which allows instant visual identification and navigation
-across your projects.
+GlowStick is visual expansion plugin for IntelliJ IDEA based IDEs that helps you visually distinct
+each IDE window per project which allows instant visual identification and navigation across your
+projects.
 
-<img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/screenshot.jpg" alt="GlowStick MHL" width="600"/>
-
+<img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/screenshot.jpg" alt="GlowStick MHL" width="600" height="414" />
 
 ## Features:
 
@@ -24,19 +21,18 @@ across your projects.
 
 ## Usage:
 
-- Set project color in IDE's project settings panel - locate project widget
-  on your toolbar, thne press right mouse button over it open context menu and
-  use `Change Project Color` option to set your color:
+- Set project color in IDE's project settings panel - locate project widget on your toolbar, thne
+  press right mouse button over it open context menu and use `Change Project Color` option to set
+  your color:
 
-<img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/menu.jpg" alt="How to set Project Color" width="600"/>
+<img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/menu.jpg" alt="How to set Project Color" width="600" height="442" />
 
-Aside from using knobs and sliders to tweak your frame shape, you can also drag
-the handles on the preview idea.
+Aside from using knobs and sliders to tweak your frame shape, you can also drag the handles on the
+preview idea.
 
 ## Settings
 
-You can tweak plugin settings by going to `Settings` → `Appearance & Behavior` →
-`GlowStick Frame`.
+You can tweak plugin settings by going to `Settings` → `Appearance & Behavior` → `GlowStick Frame`.
 
 ## License
 
