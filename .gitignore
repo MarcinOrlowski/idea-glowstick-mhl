@@ -39,3 +39,4 @@ target/
 dist/
 /.idea/
 bin/
+release/
