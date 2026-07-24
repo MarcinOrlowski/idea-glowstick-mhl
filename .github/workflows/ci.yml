@@ -1,0 +1,51 @@
+##################################################################################
+#
+# Runs CI pipeline
+#
+# Author: Marcin Orlowski <mail (#) marcinOrlowski (.) com>
+#
+##################################################################################
+
+name: CI
+
+on:
+  pull_request:
+    branches: [ master, dev ]
+  push:
+    branches: [ master, dev ]
+
+# Cancel superseded runs on the same ref (e.g. new pushes to a PR branch).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test & build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run unit tests
+        run: ./gradlew test
+
+      - name: Build plugin
+        run: ./gradlew buildPlugin
+
+      - name: Upload plugin artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: glowstick-mhl-plugin
+          path: build/distributions/*.zip
+          if-no-files-found: error
