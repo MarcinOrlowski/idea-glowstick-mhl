@@ -13,8 +13,8 @@ package com.marcinorlowski.glowstick
 
 import com.intellij.ide.plugins.DynamicPluginListener
 import com.intellij.ide.plugins.IdeaPluginDescriptor
-import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.ProjectManager
 
 /**
@@ -25,8 +25,7 @@ import com.intellij.openapi.project.ProjectManager
 class ProjectColorPluginListener : DynamicPluginListener {
 
     override fun pluginLoaded(pluginDescriptor: IdeaPluginDescriptor) {
-        val ours = PluginManager.getPluginByClass(javaClass)?.pluginId
-        if (pluginDescriptor.pluginId != ours) return
+        if (pluginDescriptor.pluginId != OUR_ID) return
         ApplicationManager.getApplication().invokeLater {
             for (p in ProjectManager.getInstance().openProjects) {
                 if (p.isDisposed) continue
@@ -35,5 +34,11 @@ class ProjectColorPluginListener : DynamicPluginListener {
                 }
             }
         }
+    }
+
+    companion object {
+        // Must match <id> in META-INF/plugin.xml. Using a PluginId constant avoids the
+        // internal PluginManager.getPluginByClass API just to learn our own id.
+        private val OUR_ID = PluginId.getId("com.marcinorlowski.glowstick")
     }
 }

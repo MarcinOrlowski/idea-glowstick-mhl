@@ -1,5 +1,7 @@
 import org.gradle.process.ExecOperations
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel
 import java.io.ByteArrayOutputStream
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -89,17 +91,38 @@ val archiveVersionSuffix = providers.of(ArchiveVersionSource::class) {
 // settings header at runtime (the plugin <version> itself stays clean at "0.1.0").
 // Regenerated whenever the value changes (dirty builds); stable + up-to-date on a clean tree.
 val buildInfoDir = layout.buildDirectory.dir("generated/buildInfo")
+val pluginXmlFile = layout.projectDirectory.file("src/main/resources/META-INF/plugin.xml")
 val generateBuildInfo = tasks.register("generateBuildInfo") {
     val outFile = buildInfoDir.map { it.file("glowstick-build.properties") }
     val cleanVersion = prop("pluginVersion")
+    val cleanName = prop("pluginName")
     val fullBuild = archiveVersionSuffix
+    val xml = pluginXmlFile
     inputs.property("version", cleanVersion)
+    inputs.property("name", cleanName)
     inputs.property("build", fullBuild)
+    inputs.file(xml)
     outputs.file(outFile)
     doLast {
+        // vendor + url live in the (structural) plugin.xml; name + version in gradle.properties.
+        // Bundling them lets the settings banner read metadata from this resource instead of
+        // the internal PluginManager.getPluginByClass API.
+        val text = xml.asFile.readText()
+        val url = Regex("""<idea-plugin[^>]*\burl="([^"]*)"""")
+            .find(text)?.groupValues?.get(1).orEmpty()
+        val vendor = Regex("""<vendor[^>]*>(.*?)</vendor>""", RegexOption.DOT_MATCHES_ALL)
+            .find(text)?.groupValues?.get(1)?.trim().orEmpty()
         outFile.get().asFile.apply {
             parentFile.mkdirs()
-            writeText("version=${cleanVersion.get()}\nbuild=${fullBuild.get()}\n")
+            writeText(
+                buildString {
+                    append("version=").append(cleanVersion.get()).append('\n')
+                    append("name=").append(cleanName.get()).append('\n')
+                    append("vendor=").append(vendor).append('\n')
+                    append("url=").append(url).append('\n')
+                    append("build=").append(fullBuild.get()).append('\n')
+                }
+            )
         }
     }
 }
@@ -154,14 +177,55 @@ intellijPlatform {
         }
     }
     pluginVerification {
+        // Make `verifyPlugin` FAIL locally on actionable categories the Marketplace reports
+        // (by default only hard compatibility problems fail; the rest are merely written to the
+        // report and easy to miss). Full report is always at build/reports/pluginVerifier/.
+        //
+        // INTERNAL_API_USAGES is deliberately NOT in this list: the only internal call left is
+        // ProjectWindowCustomizerService.getProjectColorToCustomize - the per-project color
+        // source, which has no public equivalent and IS the plugin's feature. It's still
+        // reported (and the Marketplace flags it as a non-blocking warning), just not fatal.
+        failureLevel = listOf(
+            FailureLevel.COMPATIBILITY_PROBLEMS,
+            // Left commented on purpose (see above): re-enable to fail on internal-API usage
+            // once JetBrains provides a public API for the per-project color, or to catch NEW
+            // internal usages during development.
+            // FailureLevel.INTERNAL_API_USAGES,
+            FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
+            FailureLevel.DEPRECATED_API_USAGES,
+            FailureLevel.INVALID_PLUGIN,
+        )
         ides {
-            recommended()
+            // Downloadable IntelliJ IDEA Community releases to verify against (via
+            // intellij-plugin-verifier: `./gradlew verifyPlugin`). Pinned explicitly, not
+            // select{}/recommended(). NOTE: 2025.3+ and 2026.x Community are NOT published to
+            // the maven-style repo this (old, 2.3.0) IJP Gradle plugin resolves from
+            // (ideaIC:2026.1 -> 404), so they can't be listed here - resolution fails for the
+            // whole task on any 404. To cover those either upgrade
+            // `org.jetbrains.intellij.platform`, or use the local install below. Prune any
+            // version that 404s. First run downloads each IDE (several GB), cached afterwards.
+            listOf("2024.1", "2024.2", "2024.3", "2025.1", "2025.2")
+                .forEach { ide(IntelliJPlatformType.IntellijIdeaCommunity, it) }
+
+            // Also verify against a locally-installed IDE (no download) when present - this is
+            // how we cover recent builds (e.g. 2026.2, where the Marketplace findings appear)
+            // that aren't downloadable above. Path is machine-specific; guarded so machines
+            // without it just skip. Adjust to your install (Toolbox/snap/tarball) as needed.
+            val localIde = file("/snap/intellij-idea/current")
+            if (localIde.resolve("product-info.json").exists()) local(localIde)
         }
     }
 }
 
 kotlin {
     jvmToolchain(17)   // 2024.1 baseline: runs on JBR 17, bytecode must stay 17
+    compilerOptions {
+        // Use real JVM default methods instead of Kotlin's delegating bridges, so a class
+        // implementing a Java interface (e.g. DynamicPluginListener) does NOT generate an
+        // override for every default method - that dragged in the deprecated
+        // `checkUnloadPlugin`. Also the JetBrains-recommended mode for platform plugins.
+        freeCompilerArgs.add("-Xjvm-default=all")
+    }
 }
 
 // The generated build-info file ships as a classpath resource (/glowstick-build.properties).

@@ -21,9 +21,9 @@ projects.
 
 ## Usage:
 
-- Set project color in IDE's project settings panel - locate project widget on your toolbar, thne
-  press right mouse button over it open context menu and use `Change Project Color` option to set
-  your color:
+Set project color in IDE's project settings panel - locate project widget on your toolbar, then
+press right mouse button over it open context menu and use `Change Project Color` option to set
+your color:
 
 <img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/menu.jpg" alt="How to set Project Color" width="600" height="442" />
 
@@ -33,6 +33,8 @@ preview idea.
 ## Settings
 
 You can tweak plugin settings by going to `Settings` → `Appearance & Behavior` → `GlowStick Frame`.
+
+<img src="https://raw.githubusercontent.com/MarcinOrlowski/idea-glowstick-mhl/master/images/settings.jpg" alt="How to set Project Color" width="600" height="662" />
 
 ## License
 

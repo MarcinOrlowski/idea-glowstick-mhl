@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Unit tests for [FrameOpacityModel] — the single source of truth for per-row opacity.
+ * Unit tests for [FrameOpacityModel] - the single source of truth for per-row opacity.
  * Pure math, no IDE runtime; expected values are computed by hand from the easing spec.
  */
 class FrameOpacityModelTest {

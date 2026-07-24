@@ -13,8 +13,6 @@ package com.marcinorlowski.glowstick
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
-import com.intellij.ide.plugins.IdeaPluginDescriptor
-import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -34,13 +32,14 @@ internal object SettingsBanner {
     private const val MARKETPLACE_URL = "https://plugins.jetbrains.com/"
 
     fun build(): JComponent {
-        val d = PluginManager.getPluginByClass(javaClass) as? IdeaPluginDescriptor
-        val name = d?.name?.takeIf { it.isNotBlank() } ?: "GlowStick MHL"
-        val vendor = d?.vendor?.takeIf { it.isNotBlank() }
-        val version = d?.version?.takeIf { it.isNotBlank() }
-
-        // Repo URL only (no vendorUrl fallback) - project links are derived from it.
-        val url = d?.url?.takeIf { it.isNotBlank() }
+        // Metadata is read from the bundled /glowstick-build.properties (written by the
+        // generateBuildInfo Gradle task) rather than the internal PluginManager API.
+        val meta = loadBuildInfo()
+        val name = meta.getProperty("name")?.takeIf { it.isNotBlank() } ?: "GlowStick MHL"
+        val vendor = meta.getProperty("vendor")?.takeIf { it.isNotBlank() }
+        val version = meta.getProperty("version")?.takeIf { it.isNotBlank() }
+        // Repo URL only - project links are derived from it.
+        val url = meta.getProperty("url")?.takeIf { it.isNotBlank() }
 
         val raw = IconLoader.getIcon("/logo.png", javaClass)
         val logo = JBLabel(IconUtil.scale(raw, null, 56f / raw.iconWidth))
@@ -66,7 +65,9 @@ internal object SettingsBanner {
             add(javax.swing.Box.createHorizontalGlue(), gbc.apply { weightx = 1.0 })
         }
 
-        val bi = buildInfo()
+        val bi = meta.getProperty("build")?.takeIf { it.isNotBlank() }
+            ?: version
+            ?: "unknown"
         val buildLabel = JBLabel(bi)
         buildLabel.apply {
             foreground = JBColor.GRAY
@@ -163,13 +164,12 @@ internal object SettingsBanner {
         }
     }
 
-    private fun buildInfo(): String {
+    /** Load the bundled build-info resource (name/vendor/url/version/build). */
+    private fun loadBuildInfo(): java.util.Properties {
         val props = java.util.Properties()
         javaClass.getResourceAsStream("/glowstick-build.properties")
             ?.use { props.load(it) }
-        return props.getProperty("build")?.takeIf { it.isNotBlank() }
-            ?: (PluginManager.getPluginByClass(javaClass) as? IdeaPluginDescriptor)?.version
-            ?: "unknown"
+        return props
     }
 
     private fun copyToClipboard(text: String, anchor: JComponent) {

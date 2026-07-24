@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Unit tests for [ProjectColorSettings] value handling — defaults, clamping, and
+ * Unit tests for [ProjectColorSettings] value handling - defaults, clamping, and
  * state round-trip. The class is instantiated directly (no project/service lookup),
  * so these exercise only the pure getter/setter/normalization logic.
  */

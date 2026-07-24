@@ -23,6 +23,7 @@ import com.intellij.util.ui.FormBuilder
 import java.awt.BorderLayout
 import java.awt.Color
 import javax.swing.JComponent
+import javax.swing.JList
 import javax.swing.JPanel
 
 /**
@@ -274,7 +275,19 @@ class ProjectColorConfigurable(private val project: Project) : Configurable {
         label: (T) -> String,
     ) =
         ComboBox(items).apply {
-            renderer = SimpleListCellRenderer.create("") { label(it) }
+            // Subclass directly - the whole SimpleListCellRenderer.create(...) factory family
+            // is scheduled for removal (the verifier flags it on 2026.2+).
+            renderer = object : SimpleListCellRenderer<T>() {
+                override fun customize(
+                    list: JList<out T>,
+                    value: T?,
+                    index: Int,
+                    selected: Boolean,
+                    hasFocus: Boolean,
+                ) {
+                    text = value?.let(label).orEmpty()
+                }
+            }
             selectedItem = selected
         }
 
