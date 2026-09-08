@@ -11,11 +11,10 @@ package com.marcinorlowski.glowstick
  *
  ******************************************************************** **/
 
-import com.intellij.ide.ProjectWindowCustomizerService
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.ui.JBColor
+import com.intellij.ui.ColorPanel
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.TitledSeparator
 import com.intellij.ui.components.JBCheckBox
@@ -32,10 +31,12 @@ import javax.swing.JPanel
 class ProjectColorConfigurable(private val project: Project) : Configurable {
 
     private var ui: Ui? = null
-    private var previewColor: Color =
-        JBColor(Color(0x35, 0x74, 0xF0), Color(0x35, 0x74, 0xF0))
+    private var previewColor: Color = ProjectColorPalette.forName(project.name)
 
     private val settings get() = ProjectColorSettings.getInstance(project)
+
+    /** Color this project gets while "Auto" is on. */
+    private val autoColor: Color get() = ProjectColorPalette.forName(project.name)
 
     override fun getDisplayName(): String = "GlowStick MHL"
 
@@ -44,13 +45,12 @@ class ProjectColorConfigurable(private val project: Project) : Configurable {
         val minW = ProjectColorSettings.MIN_WIDTH
         val maxW = ProjectColorSettings.MAX_WIDTH
 
-        previewColor = runCatching {
-            ProjectWindowCustomizerService.getInstance()
-                .getProjectColorToCustomize(project)
-        }.getOrNull() ?: previewColor
+        previewColor = s.effectiveColor(project.name)
 
         val u = Ui(
             enabled = JBCheckBox("", s.enabled),
+            color = ColorPanel(),
+            colorAuto = JBCheckBox("Auto (from project name)", s.isAutoColor),
             masterAlpha = SliderInput(0, 100, s.masterAlpha, unit = "%").ticks(
                 25,
                 5,
@@ -111,8 +111,22 @@ class ProjectColorConfigurable(private val project: Project) : Configurable {
         u.innerValueProvider.addActionListener { refresh() }
         u.enabled.addActionListener { setControlsEnabled(u.enabled.isSelected) }
 
-        // Dragging a preview handle writes back to the matching slider, which re-fires
-        // refreshPreview - so the handle and the slider/spinner stay in sync both ways.
+        // The picker starts on the auto color, so unticking "Auto" keeps what is
+        // already on screen and the user only nudges it from there.
+        u.color.selectedColor = s.customColor ?: autoColor
+        u.color.addActionListener {
+            previewColor = u.color.selectedColor ?: autoColor
+            refresh()
+        }
+        u.colorAuto.addActionListener {
+            if (u.colorAuto.isSelected) u.color.selectedColor = autoColor
+            previewColor = u.color.selectedColor ?: autoColor
+            setControlsEnabled(u.enabled.isSelected)
+            refresh()
+        }
+
+        // Dragging a preview handle writes back to the matching slider,
+        // which re-fires refreshPreview
         u.preview.onOuterAlpha = { u.outerAlpha.value = it }
         u.preview.onInnerAlpha = { u.innerAlpha.value = it }
         u.preview.onEndAlpha = { u.innerEnd.value = it }
@@ -132,9 +146,16 @@ class ProjectColorConfigurable(private val project: Project) : Configurable {
             add(u.edgeRight)
         }
 
+        val colorRow = JPanel(java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0)).apply {
+            add(u.color)
+            add(javax.swing.Box.createHorizontalStrut(12))
+            add(u.colorAuto)
+        }
+
         val form = FormBuilder.createFormBuilder()
             .addComponent(sectionLabel("General"))
             .addLabeledComponent("Enabled:", u.enabled)
+            .addLabeledComponent("Color:", colorRow)
             .addLabeledComponent("Edges:", edgesRow)
             .addLabeledComponent("Opacity:", u.masterAlpha.panel)
             .addComponent(sectionLabel("Outer segment"))
@@ -162,6 +183,8 @@ class ProjectColorConfigurable(private val project: Project) : Configurable {
 
     private fun setControlsEnabled(on: Boolean) {
         val u = ui ?: return
+        u.colorAuto.isEnabled = on
+        u.color.isEnabled = on && !u.colorAuto.isSelected
         u.masterAlpha.setEnabled(on)
         u.edgeTop.isEnabled = on
         u.edgeBottom.isEnabled = on
@@ -204,6 +227,8 @@ class ProjectColorConfigurable(private val project: Project) : Configurable {
         val u = ui ?: return false
         val s = settings
         return u.enabled.isSelected != s.enabled ||
+                u.colorAuto.isSelected != s.isAutoColor ||
+                (!u.colorAuto.isSelected && u.color.selectedColor != s.customColor) ||
                 u.masterAlpha.value != s.masterAlpha ||
                 u.edgeTop.isSelected != s.edgeTop ||
                 u.edgeBottom.isSelected != s.edgeBottom ||
@@ -222,6 +247,8 @@ class ProjectColorConfigurable(private val project: Project) : Configurable {
         val u = ui ?: return
         val s = settings
         s.enabled = u.enabled.isSelected
+        s.customColor =
+            if (u.colorAuto.isSelected) null else (u.color.selectedColor ?: autoColor)
         s.masterAlpha = u.masterAlpha.value
         s.edgeTop = u.edgeTop.isSelected
         s.edgeBottom = u.edgeBottom.isSelected
@@ -245,6 +272,9 @@ class ProjectColorConfigurable(private val project: Project) : Configurable {
         val u = ui ?: return
         val s = settings
         u.enabled.isSelected = s.enabled
+        u.colorAuto.isSelected = s.isAutoColor
+        u.color.selectedColor = s.customColor ?: autoColor
+        previewColor = s.effectiveColor(project.name)
         u.masterAlpha.value = s.masterAlpha
         u.edgeTop.isSelected = s.edgeTop
         u.edgeBottom.isSelected = s.edgeBottom
@@ -275,8 +305,6 @@ class ProjectColorConfigurable(private val project: Project) : Configurable {
         label: (T) -> String,
     ) =
         ComboBox(items).apply {
-            // Subclass directly - the whole SimpleListCellRenderer.create(...) factory family
-            // is scheduled for removal (the verifier flags it on 2026.2+).
             renderer = object : SimpleListCellRenderer<T>() {
                 override fun customize(
                     list: JList<out T>,
@@ -295,6 +323,8 @@ class ProjectColorConfigurable(private val project: Project) : Configurable {
 
     private class Ui(
         val enabled: JBCheckBox,
+        val color: ColorPanel,
+        val colorAuto: JBCheckBox,
         val masterAlpha: SliderInput,
         val edgeTop: JBCheckBox,
         val edgeBottom: JBCheckBox,
