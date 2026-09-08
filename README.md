@@ -12,17 +12,19 @@ across your projects.
 ## Features:
 
 - Draws colorful frame around the IDE window for opened project,
-- Colors configurable per-project in IDE settings,
+- Each project gets its own color automatically, straight after install,
+- Color is freely pickable per-project,
 - Visuals can be customized on per-project basis,
 - Configurable frame profile with segments and opacity gradients,
 
 ## Usage:
 
-- Set project color in IDE's project settings panel - locate project widget
-  on your toolbar, thne press right mouse button over it open context menu and
-  use `Change Project Color` option to set your color:
+Nothing to set up: every project starts with a color derived from its name, so
+your windows already tell themselves apart.
 
-![Access via IDE project widget](images/menu.webp)
+To pick the color yourself, open the settings page (below), untick `Auto` next
+to `Color` and choose one. That is also how you separate two projects whose
+automatic colors happen to clash.
 
 ## Settings
 
@@ -37,21 +39,22 @@ Preview shows the real alpha distribution reflecting current settings.
 
 #### General section
 
-* `Enabled` - enable/disable color frame drawing per-project basis,
-* `Edges` - which window edges should be colored,
-* `Opacity` - master opacity for the drawn frame,
+- `Enabled` - enable/disable color frame drawing per-project basis,
+- `Color` - frame color; with `Auto` ticked it comes from the project name,
+- `Edges` - which window edges should be colored,
+- `Opacity` - master opacity for the drawn frame,
 
 #### Per segment
 
-* `Width` - set frame segment's width in pixels,
-* `Opacity` - opacity of the frame in percents,
-* `Interpolation` - choose function to provide opacity gradient.
+- `Width` - set frame segment's width in pixels,
+- `Opacity` - opacity of the frame in percents,
+- `Interpolation` - choose function to provide opacity gradient.
 
 Aside from using knobs and sliders to tweak your frame shape, you can also drag
 the handles on the preview idea.
 
 ## License
 
-* Written and copyrighted &copy;2026 by Marcin Orlowski <mail (#) marcinorlowski (.) com>
-* GlowStick MHL is open-source software licensed under the
+- Written and copyrighted &copy;2026 by Marcin Orlowski <mail (#) marcinorlowski (.) com>
+- GlowStick MHL is open-source software licensed under the
   [MIT license](http://opensource.org/licenses/MIT)
