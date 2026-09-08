@@ -180,17 +180,9 @@ intellijPlatform {
         // Make `verifyPlugin` FAIL locally on actionable categories the Marketplace reports
         // (by default only hard compatibility problems fail; the rest are merely written to the
         // report and easy to miss). Full report is always at build/reports/pluginVerifier/.
-        //
-        // INTERNAL_API_USAGES is deliberately NOT in this list: the only internal call left is
-        // ProjectWindowCustomizerService.getProjectColorToCustomize - the per-project color
-        // source, which has no public equivalent and IS the plugin's feature. It's still
-        // reported (and the Marketplace flags it as a non-blocking warning), just not fatal.
         failureLevel = listOf(
             FailureLevel.COMPATIBILITY_PROBLEMS,
-            // Left commented on purpose (see above): re-enable to fail on internal-API usage
-            // once JetBrains provides a public API for the per-project color, or to catch NEW
-            // internal usages during development.
-            // FailureLevel.INTERNAL_API_USAGES,
+            FailureLevel.INTERNAL_API_USAGES,
             FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
             FailureLevel.DEPRECATED_API_USAGES,
             FailureLevel.INVALID_PLUGIN,

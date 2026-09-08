@@ -177,7 +177,9 @@ MD032: false  # MOR
 MD033:
   # Allowed elements
   # allowed_elements: []
-  allowed_elements: ['mail'] # MOR
+  # `img` is required by README.plugin.md: that file becomes the Marketplace
+  # description, where sized <img> tags are the only way to control the images.
+  allowed_elements: ['mail', 'img'] # MOR
 
 # MD034/no-bare-urls - Bare URL used
 # MD034: true

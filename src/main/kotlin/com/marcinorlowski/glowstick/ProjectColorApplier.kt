@@ -11,7 +11,6 @@ package com.marcinorlowski.glowstick
  *
  ******************************************************************** **/
 
-import com.intellij.ide.ProjectWindowCustomizerService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import java.awt.Color
@@ -29,14 +28,11 @@ object ProjectColorApplier {
 
     private const val COMPONENT_NAME_BORDER = "ProjectColorBorder"
 
-    private val FALLBACK_COLOR = Color(0x35, 0x74, 0xF0)   // IDE-ish blue
-
     fun apply(project: Project) {
         if (!ProjectColorSettings.getInstance(project).enabled) return
 
-        // Everything below touches the frame AND the color - and
-        // `getProjectColorToCustomize` asserts EDT - so all of it must run on
-        // the Event Dispatch Thread.
+        // This touches Swing (the frame and its glass pane), and apply() is called
+        // from a bg coroutine, so it must run on the Event Dispatch Thread.
         fun tryPaint(attemptsLeft: Int) {
             SwingUtilities.invokeLater {
                 if (project.isDisposed) return@invokeLater
@@ -84,8 +80,7 @@ object ProjectColorApplier {
         WindowManager.getInstance().getFrame(project)
 
     private fun currentColor(project: Project): Color =
-        ProjectWindowCustomizerService.getInstance()
-            .getProjectColorToCustomize(project) ?: FALLBACK_COLOR
+        ProjectColorSettings.getInstance(project).effectiveColor(project.name)
 
     private fun paintFrame(
         frame: JFrame,
@@ -208,7 +203,7 @@ object ProjectColorApplier {
 
                 // A disabled edge contributes no rows, so the strips of the
                 // adjacent edges run to the very window border on that side
-                // (no corner inset).
+                // (there are no corner inset in such case).
                 if (edges.top) g2.fillRect(x0, d, x1 - x0 + 1, 1)
                 if (edges.bottom) g2.fillRect(x0, height - 1 - d, x1 - x0 + 1, 1)
                 if (edges.left) g2.fillRect(d, y0, 1, y1 - y0 + 1)

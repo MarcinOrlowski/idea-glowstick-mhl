@@ -13,6 +13,7 @@ package com.marcinorlowski.glowstick
 
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
+import java.awt.Color
 
 /**
  * How border opacity is distributed across the frame thickness (outer → inner).
@@ -41,6 +42,9 @@ class ProjectColorSettings : PersistentStateComponent<ProjectColorSettings.State
     data class State(
         var enabled: Boolean = true,
 
+        // Frame color as #RRGGBB. Empty = derive it from the project name
+        var color: String = "",
+
         // Global opacity multiplier % applied to the final per-row values, so
         // the whole pattern can be scaled down without editing the segments.
         var masterAlpha: Int = DEFAULT_MASTER_ALPHA,
@@ -63,9 +67,8 @@ class ProjectColorSettings : PersistentStateComponent<ProjectColorSettings.State
         // Default 0 = fully transparent.
         var endAlpha: Int = 0,
 
-        // Which window edges the frame is drawn on. Top is off by default as
-        // modern IDE's UI uses gradient on its combined navigation/menu bar.
-        var edgeTop: Boolean = false,
+        // Which window edges the frame is drawn on.
+        var edgeTop: Boolean = true,
         var edgeBottom: Boolean = true,
         var edgeLeft: Boolean = true,
         var edgeRight: Boolean = true,
@@ -84,6 +87,24 @@ class ProjectColorSettings : PersistentStateComponent<ProjectColorSettings.State
         set(value) {
             myState.enabled = value
         }
+
+    /**
+     * The color picked by the user, or `null` when it is derived from the
+     * project name instead. Stored as `#RRGGBB`; malformed values read as `null`.
+     */
+    var customColor: Color?
+        get() = parseHex(myState.color)
+        set(value) {
+            myState.color = value?.let(::toHex).orEmpty()
+        }
+
+    /** True while no explicit color is set, i.e. the palette default is used. */
+    val isAutoColor: Boolean
+        get() = customColor == null
+
+    /** The color to paint for a project named [projectName]. */
+    fun effectiveColor(projectName: String): Color =
+        customColor ?: ProjectColorPalette.forName(projectName)
 
     /** Border thickness in px, always within [MIN_WIDTH, MAX_WIDTH]. */
     var width: Int
@@ -171,6 +192,17 @@ class ProjectColorSettings : PersistentStateComponent<ProjectColorSettings.State
         const val DEFAULT_WIDTH = 32
         const val DEFAULT_ALPHA = 75
         const val DEFAULT_MASTER_ALPHA = 100
+
+        /** Parses `#RRGGBB` or `RRGGBB`; `null` for blank or malformed input. */
+        fun parseHex(hex: String?): Color? {
+            val digits = hex?.trim()?.removePrefix("#") ?: return null
+            if (digits.length != 6) return null
+            return digits.toIntOrNull(16)?.let { Color(it) }
+        }
+
+        /** Formats [color] as `#RRGGBB`. Alpha is dropped - the rows carry it. */
+        fun toHex(color: Color): String =
+            String.format("#%02X%02X%02X", color.red, color.green, color.blue)
 
         fun getInstance(project: Project): ProjectColorSettings =
             project.getService(ProjectColorSettings::class.java)
