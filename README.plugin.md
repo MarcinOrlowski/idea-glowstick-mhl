@@ -15,7 +15,7 @@ projects.
 ## Features:
 
 - Draws colorful frame around the IDE window for opened project,
-- Each project gets its own color automatically, based on project name, 
+- Each project gets its own color automatically, based on project name,
 - Color is freely pickable per-project,
 - Visuals can be customized on per-project basis,
 - Configurable frame profile with segments and opacity gradients,
@@ -40,4 +40,4 @@ You can tweak plugin settings by going to `Settings` → `Appearance & Behavior`
 
 ## License
 
-* Written and copyrighted &copy;2026 by Marcin Orlowski
+- Written and copyrighted &copy;2026 by Marcin Orlowski

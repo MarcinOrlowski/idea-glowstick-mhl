@@ -46,6 +46,10 @@ jobs:
           filters: |
             src:
               - 'README.md'
+              # Both of these are shipped to the Marketplace (description /
+              # change-notes), so they must lint as strictly as README.md.
+              - 'README.plugin.md'
+              - 'CHANGES.md'
 
       - name: "Will action step be run?"
         run: |

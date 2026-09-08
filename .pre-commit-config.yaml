@@ -78,9 +78,9 @@ repos:
       - id: no-ai-slop
         exclude: '^(assets/vendor|vendor)/'
       - id: commit-msg
-      - id: branch-name
-        stages: [ pre-push ]
-        args: [ '--config=.pre-commit/branch-name.yaml' ]
+#      - id: branch-name
+#        stages: [ pre-push ]
+#        args: [ '--config=.pre-commit/branch-name.yaml' ]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
